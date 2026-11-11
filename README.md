@@ -64,9 +64,20 @@ npx tsc --noEmit   # 型チェック
 npm run build      # 本番ビルド
 ```
 
-### 環境変数
+### 環境変数（ログイン）
 
-**不要です。** APIキーなしで全機能が動作します。
+画面全体はログインで保護しています（`/login`）。ID とパスワードは**コードに書かず**、サーバー側の環境変数で設定します。
+
+| 変数 | 内容 |
+|---|---|
+| `DEMO_LOGIN_ID` | ログインID（メールアドレス。大文字小文字は区別しない） |
+| `DEMO_LOGIN_PASSWORD` | パスワード |
+| `DEMO_SESSION_SECRET` | セッション署名用のランダム文字列（推奨。`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` で作成） |
+
+ローカルではプロジェクト直下に `.env.local` を作って上の3つを書きます（`.env*` は Git 管理外）。
+**未設定のままでは誰もログインできません**（画面は開かれずロックされたまま）。
+
+その他のAPIキーは不要です。
 将来LLMを接続する場合は、サーバー側の環境変数（例：`ANTHROPIC_API_KEY`）でのみ扱い、クライアントに露出させないでください（`src/lib/generation/engine.ts` 参照）。
 
 ## 6. ディレクトリ構成
@@ -135,7 +146,7 @@ docs/
 
 ## 10. 本番化する場合の実装課題（未実装）
 
-- 自治体ごとのテナント分離、認証・認可（職員・管理者の権限）
+- 自治体ごとのテナント分離、認証・認可（職員・管理者の権限）。現在のログインは1アカウントの共有パスワード方式で、試行回数の制限もない
 - データ利用許諾の範囲チェック（自治体ごとに参照できるデータを制御）
 - 監査ログ（誰がどのデータを参照し、どの文書を出力したか）
 - サーバー側のデータ取り込み（バッチ/API）と国内リージョンでの保管
@@ -150,7 +161,7 @@ docs/
 1. Vercel にログインし「Add New… → Project」
 2. GitHub リポジトリ `gottyan6116/polimii-smout-app` を Import
 3. Framework Preset は「Next.js」（自動判定）。Build Command・Output は既定のまま
-4. 環境変数は不要
+4. 「Environment Variables」に `DEMO_LOGIN_ID` `DEMO_LOGIN_PASSWORD` `DEMO_SESSION_SECRET` を設定（Production / Preview とも）
 5. 「Deploy」
 
 `main` への push で自動デプロイされます。デモ用のため、公開範囲（Vercel の Deployment Protection 等）は商談相手に合わせて設定してください。

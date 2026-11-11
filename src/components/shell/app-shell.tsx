@@ -6,13 +6,14 @@ import {
   ClipboardCheck,
   FileText,
   House,
+  LogOut,
   Menu,
   SearchCheck,
   UsersRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, Suspense, useState } from "react";
 import { dataSource } from "@/lib/data/adapter";
 import type { FiscalYearId } from "@/lib/data/types";
@@ -177,7 +178,31 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           データ更新 2026-10-15（架空）
         </p>
       </div>
+      <LogoutButton />
     </>
+  );
+}
+
+function LogoutButton() {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  return (
+    <div className="px-3 pb-3">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={async () => {
+          setPending(true);
+          await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+          router.replace("/login");
+          router.refresh();
+        }}
+        className="flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium text-fg-2 transition-colors duration-150 hover:bg-bg/70 hover:text-fg disabled:opacity-60"
+      >
+        <LogOut className="size-4 text-fg-3" strokeWidth={1.75} aria-hidden />
+        {pending ? "ログアウトしています…" : "ログアウト"}
+      </button>
+    </div>
   );
 }
 

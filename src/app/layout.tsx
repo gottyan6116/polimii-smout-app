@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
-import { AppShell } from "@/components/shell/app-shell";
 import "./globals.css";
 
 const notoSansJp = Noto_Sans_JP({
@@ -29,9 +28,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ja" className={`${notoSansJp.variable} h-full`}>
-      <body className="min-h-full">
-        <AppShell>{children}</AppShell>
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }
