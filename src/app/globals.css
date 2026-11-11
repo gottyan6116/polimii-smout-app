@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+/*
+ * デザイントークン
+ * 白基調・1px境界線・ダークネイビー文字。アクセント #67C59F は面・状態表示に使い、
+ * 文字やボタン地には十分なコントラストを持つ濃色（accent-strong）を使う。
+ */
+:root {
+  color-scheme: light;
+
+  --bg: #ffffff;
+  --surface-2: #f6f8f7;
+  --surface-3: #eef2f0;
+  --border: #e0e6e3;
+  --border-strong: #c7d0cc;
+
+  --fg: #16223a;
+  --fg-2: #3f4b60;
+  --fg-3: #5d687a;
+
+  --accent: #67c59f;
+  --accent-strong: #1f7a57;
+  --accent-hover: #186246;
+  --accent-soft: #e9f6ef;
+  --accent-ink: #145a3f;
+
+  --warn: #9a4708;
+  --warn-soft: #fdf4e7;
+  --warn-border: #efd2a6;
+
+  --danger: #b42318;
+  --danger-soft: #fdeeec;
+  --danger-border: #f3c4bd;
+
+  --neutral-soft: #eef1f5;
+
+  --navy: #2b3a55;
+  --chart-muted: #b8c2cf;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-border: var(--warn-border);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-border: var(--danger-border);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-navy: var(--navy);
+
+  --font-sans: var(--font-noto-sans-jp), "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  --font-serif: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.7;
+  font-feature-settings: "palt" 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #cdebdc;
+  color: var(--fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--accent-strong);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* スクロールバー（WebKit / Firefox） */
+* {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------- 印刷（PDF保存） ---------------- */
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm 20mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    display: block !important;
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    color: #000;
+    font-family: var(--font-serif);
+    font-size: 10.5pt;
+    line-height: 1.75;
+  }
+
+  .print-area h1,
+  .print-area h2 {
+    font-family: var(--font-sans);
+    break-after: avoid;
+  }
+
+  .print-area p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .print-area table {
+    break-inside: auto;
+  }
+
+  .print-area tr {
+    break-inside: avoid;
+  }
+}
