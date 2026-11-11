@@ -42,3 +42,7 @@ next-env.d.ts
 
 # local tooling
 .claude/
+
+# nested build output from running dev with --prefix from a parent folder
+.next/
+/outputs/
