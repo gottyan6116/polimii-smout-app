@@ -8,23 +8,31 @@ import type { FiscalYearId } from "@/lib/data/types";
 import { updatePlan, usePlan, useWorkContext } from "@/lib/store/local-store";
 import { cn } from "@/lib/utils";
 import { SourceNote } from "@/components/domain/analysis";
+import { Columns } from "@/components/charts/charts";
+import { INK } from "@/components/charts/theme";
 import { CreateDocButton } from "@/components/domain/create-doc-button";
 import { Button } from "@/components/ui/button";
 import { Badge, EmptyState, PageHeader, Panel } from "@/components/ui/primitives";
 
 const AREAS: (Issue["area"] | "すべて")[] = ["すべて", "施策実績", "自治体KPI", "関心・属性", "データ"];
 
-const KIND_HEAD: Record<FindingKind, string> = {
-  fact: "border-t-navy",
-  hypothesis: "border-t-warn",
-  action: "border-t-accent-strong",
-  verify: "border-t-fg-3",
+const KIND_MARK: Record<FindingKind, string> = {
+  fact: "bg-navy",
+  hypothesis: "bg-warn",
+  action: "bg-accent-strong",
+  verify: "bg-fg-3",
 };
+
+const IMPACTS: Level[] = ["高", "中", "低"];
+const DIFFICULTIES: Level[] = ["低", "中", "高"];
 
 function FindingCell({ finding, kind }: { finding: Finding | null; kind: FindingKind }) {
   return (
-    <div className={cn("border-t-2 bg-bg px-3 py-2.5", KIND_HEAD[kind])}>
-      <p className="text-[12px] font-bold text-fg-2">{FINDING_LABEL[kind]}</p>
+    <div className="bg-bg px-3 py-2.5">
+      <p className="flex items-center gap-1.5 text-[12px] font-bold text-fg-2">
+        <span aria-hidden className={cn("size-2 rounded-[2px]", KIND_MARK[kind])} />
+        {FINDING_LABEL[kind]}
+      </p>
       {finding ? (
         <>
           <p className="mt-1 text-[13px] leading-6 text-fg">{finding.text}</p>
@@ -74,6 +82,82 @@ function ImprovementsInner({ municipalityId, fiscalYearId }: { municipalityId: s
         description={`${m.name}・${fy.label}の施策評価と関心分析から、改善の余地と改善施策の候補を整理します。`}
         actions={<CreateDocButton type="improvement-proposal" label="改善提案書を作成する" variant="secondary" />}
       />
+
+      <div className="grid gap-5 lg:grid-cols-12">
+        <Panel
+          className="lg:col-span-8"
+          title="優先度マトリクス"
+          description="縦＝想定される効果、横＝実現難易度。左上ほど先に取り組む候補です。施策名を押すと採用／解除できます。"
+        >
+          <div className="grid grid-cols-[2.5rem_repeat(3,minmax(0,1fr))] gap-1.5 text-[12px]">
+            <span />
+            {DIFFICULTIES.map((d) => (
+              <span key={d} className="pb-1 text-center font-medium text-fg-3">
+                難易度 {d}
+              </span>
+            ))}
+            {IMPACTS.map((imp) => (
+              <div key={imp} className="contents">
+                <span className="grid place-items-center font-medium text-fg-3 [writing-mode:vertical-rl]">効果 {imp}</span>
+                {DIFFICULTIES.map((dif) => {
+                  const cell = r.measures.filter((x) => x.impact === imp && x.difficulty === dif);
+                  const best = imp === "高" && dif === "低";
+                  const good = (imp === "高" && dif === "中") || (imp === "中" && dif === "低");
+                  return (
+                    <div
+                      key={dif}
+                      className={cn(
+                        "min-h-[84px] rounded-md p-2",
+                        best ? "bg-accent-soft" : good ? "bg-accent-soft/45" : "bg-surface-2",
+                      )}
+                    >
+                      <div className="flex flex-wrap gap-1">
+                        {cell.map((x) => {
+                          const on = chosen.includes(x.id);
+                          return (
+                            <button
+                              key={x.id}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() => toggle(x.id)}
+                              title={x.title}
+                              className={cn(
+                                "max-w-full truncate rounded-[5px] border px-1.5 py-0.5 text-left text-[11px] leading-4 transition-colors duration-150",
+                                on
+                                  ? "border-accent-strong bg-accent-strong text-white"
+                                  : "border-border-strong bg-bg text-fg-2 hover:border-fg-3 hover:text-fg",
+                              )}
+                            >
+                              {x.title}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </Panel>
+        <Panel className="lg:col-span-4" title="課題の区分別件数" description={`検出された課題 ${r.issues.length}件の内訳`}>
+          <Columns
+            data={(["施策実績", "自治体KPI", "関心・属性", "データ"] as const).map((a) => ({
+              area: a,
+              count: r.issues.filter((i) => i.area === a).length,
+            }))}
+            xKey="area"
+            series={[{ key: "count", name: "件数", color: INK.base }]}
+            unit="件"
+            emphasize={
+              (["施策実績", "自治体KPI", "関心・属性", "データ"] as const)
+                .map((a) => ({ a, n: r.issues.filter((i) => i.area === a).length }))
+                .sort((x, y) => y.n - x.n)[0]?.a
+            }
+            height={200}
+          />
+        </Panel>
+      </div>
 
       <Panel
         title={`検出された課題（${r.issues.length}件）`}

@@ -8,13 +8,14 @@ import { analyzeInsights, defaultFilters, type InsightFilters } from "@/lib/anal
 import { FORMULAS, fmtNum, fmtPct, fmtPt } from "@/lib/analysis/metrics";
 import { useWorkContext } from "@/lib/store/local-store";
 import { cn } from "@/lib/utils";
-import { BarRows, HeatLegend, heatStyle } from "@/components/domain/bars";
+import { HeatLegend, heatStyle } from "@/components/domain/bars";
+import { Columns, Donut, MultiLine } from "@/components/charts/charts";
+import { INK, ORDINAL_GREEN, SERIES } from "@/components/charts/theme";
 import { FindingGroups, SourceNote } from "@/components/domain/analysis";
 import { CreateDocButton } from "@/components/domain/create-doc-button";
 import { ButtonLink } from "@/components/ui/button";
 import { Badge, EmptyState, PageHeader, Panel, SelectField } from "@/components/ui/primitives";
 
-const STAGE_COLORS = ["#d3ecdf", "#8fcfb1", "#3f9f78", "#1f5f45"];
 
 export function InsightsView() {
   const ctx = useWorkContext();
@@ -26,6 +27,16 @@ export function InsightsView() {
 function InsightsInner({ m, fiscalYearId }: { m: Municipality; fiscalYearId: ReturnType<typeof useWorkContext>["fiscalYearId"] }) {
   const [filters, setFilters] = useState<InsightFilters>(() => defaultFilters(m));
   const r = useMemo(() => analyzeInsights(m.id, fiscalYearId, filters), [m.id, fiscalYearId, filters]);
+  const topAge = r.available ? [...r.ageRows].sort((a, b) => b.count - a.count)[0] : undefined;
+  const readyShare = r.stageRows.filter((s) => s.stage === "具体的に準備中" || s.stage === "移住済み・二拠点").reduce((s, x) => s + x.share, 0);
+  // 選択中の年度の上位4テーマについて、全年度の選択率を並べる（系列の色はテーマの順位で固定）
+  const trendThemes = r.themes.slice(0, 4).map((t) => t.theme);
+  const trend = dataSource.listFiscalYears().map((f) => {
+    const ri = analyzeInsights(m.id, f.id, filters);
+    const row: Record<string, string | number | null> = { year: f.label.replace("（上期）", "上期") };
+    for (const t of trendThemes) row[t] = ri.available ? Number((ri.themes.find((x) => x.theme === t)?.share ?? 0).toFixed(1)) : null;
+    return row;
+  });
   const fy = dataSource.getFiscalYear(fiscalYearId);
 
   const toggleAge = (a: AgeBand) =>
@@ -123,39 +134,43 @@ function InsightsInner({ m, fiscalYearId }: { m: Municipality; fiscalYearId: Ret
             {filters.scope === "reference" && <Badge tone="warn">提供可否 未確認</Badge>}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Panel title="年代別の構成" description="期間内に反応した人のユニーク人数（全年代）">
-              <BarRows
-                rows={r.ageRows.map((a) => ({
-                  key: a.age,
-                  label: a.age,
-                  value: a.count,
-                  display: fmtNum(a.count, "人"),
-                  sub: fmtPct(a.share),
-                }))}
-                highlight={[...r.ageRows].sort((a, b) => b.count - a.count)[0]?.age}
+          <div className="grid gap-5 lg:grid-cols-12">
+            <Panel className="lg:col-span-7" title="年代別の構成" description="期間内に反応した人のユニーク人数（全年代）。濃い棒が最多の年代。">
+              <Columns
+                data={r.ageRows.map((a) => ({ age: a.age, count: a.count }))}
+                xKey="age"
+                series={[{ key: "count", name: "人数", color: INK.base }]}
+                unit="人"
+                emphasize={topAge?.age}
+                height={230}
               />
             </Panel>
 
-            <Panel title="移住検討段階" description="利用者がプロフィールで選んだ移住ステップ（ユニーク人数）">
-              <div className="flex h-7 w-full overflow-hidden rounded-[3px]" role="img" aria-label={r.stageRows.map((s) => `${s.stage} ${fmtPct(s.share)}`).join("、")}>
-                {r.stageRows.map((s, i) => (
-                  <span key={s.stage} style={{ width: `${s.share}%`, backgroundColor: STAGE_COLORS[i] }} className="h-full" />
-                ))}
-              </div>
-              <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-[13px]">
-                {r.stageRows.map((s, i) => (
-                  <li key={s.stage} className="flex items-center gap-2">
-                    <span className="size-3 shrink-0 rounded-[2px]" style={{ backgroundColor: STAGE_COLORS[i] }} aria-hidden />
-                    <span className="flex-1 text-fg-2">{s.stage}</span>
-                    <span className="tabular text-fg">{fmtNum(s.count, "人")}</span>
-                    <span className="tabular w-12 text-right text-fg-3">{fmtPct(s.share)}</span>
-                  </li>
-                ))}
-              </ul>
+            <Panel className="lg:col-span-5" title="移住検討段階" description="プロフィールで選んだ移住ステップの構成（ユニーク人数）">
+              <Donut
+                data={r.stageRows.map((s, i) => ({ name: s.stage, value: s.count, color: ORDINAL_GREEN[i] }))}
+                centerValue={fmtPct(readyShare)}
+                centerLabel="準備中以降"
+                unit="人"
+                size={164}
+              />
               <p className="mt-3 text-[12px] text-fg-3">段階は利用者の自己申告で、実際の移住の有無を示すものではありません。</p>
             </Panel>
           </div>
+
+          <Panel
+            title="関心テーマの選択率の推移"
+            description={`上位4テーマの年度ごとの選択率。${dataSource.listFiscalYears().find((f) => f.isPartial)?.label ?? ""}は年度途中の値です。件数ではなく率で比べています。`}
+          >
+            <MultiLine
+              data={trend}
+              xKey="year"
+              series={trendThemes.map((t, i) => ({ key: t, name: t, color: SERIES[i] }))}
+              valueFormat={(v) => `${v.toFixed(1)}%`}
+              tickFormat={(v) => `${v}%`}
+              height={250}
+            />
+          </Panel>
 
           <Panel
             title="関心テーマのランキング"

@@ -10,6 +10,8 @@ import { updatePlan, usePlan, useWorkContext } from "@/lib/store/local-store";
 import { cn } from "@/lib/utils";
 import { SourceNote, StatusBadge } from "@/components/domain/analysis";
 import { CreateDocButton } from "@/components/domain/create-doc-button";
+import { Columns } from "@/components/charts/charts";
+import { SERIES } from "@/components/charts/theme";
 import { Button } from "@/components/ui/button";
 import { Badge, Meta, PageHeader, Panel } from "@/components/ui/primitives";
 
@@ -152,6 +154,14 @@ export function PlanningView() {
   const suggestedTarget = topAge ? `${topAge.age}を中心とする、「${ins.themes[0].theme}」「${ins.themes[1].theme}」に関心のある移住検討者` : "";
   const selected = plan.selected.filter((id) => r.measures.some((x) => x.id === id));
   const planned = r.measures.filter((x) => selected.includes(x.id)).map((x) => applyEdits(x, plan.edits[x.id]));
+  // 施策ごとの色は採用順で固定。6件目以降は「その他」にまとめる（色を生成しない）
+  const loadSeries = [
+    ...planned.slice(0, 4).map((x, i) => ({ key: `m${i}`, name: x.title, color: SERIES[i], ids: [x.id] })),
+    ...(planned.length > 4
+      ? [{ key: "other", name: planned.length === 5 ? planned[4].title : `その他（${planned.length - 4}件）`, color: SERIES[4], ids: planned.slice(4).map((x) => x.id) }]
+      : []),
+  ];
+  const colorOf = (id: string) => loadSeries.find((s) => s.ids.includes(id))?.color ?? SERIES[4];
 
   const toggle = (id: string) =>
     updatePlan(m.id, (p) => {
@@ -296,6 +306,25 @@ export function PlanningView() {
             {planned.length === 0 ? (
               <p className="px-4 py-4 text-[13px] text-fg-3">施策を選択すると、四半期ごとのスケジュールが表示されます。</p>
             ) : (
+              <>
+              <div className="border-b border-border px-4 py-4">
+                <p className="mb-1 text-[13px] font-medium text-fg">四半期ごとの実施施策数</p>
+                <p className="mb-2 text-[12px] text-fg-3">同じ時期に施策が集中していないかを確認します（積み上げ＝施策ごと）。</p>
+                <Columns
+                  data={QUARTER_LABELS.map((q, qi) => {
+                    const row: Record<string, string | number> = { q };
+                    loadSeries.forEach((s) => {
+                      row[s.key] = s.ids.filter((id) => planned.find((x) => x.id === id)?.quarters[qi]).length;
+                    });
+                    return row;
+                  })}
+                  xKey="q"
+                  series={loadSeries.map((s) => ({ key: s.key, name: s.name, color: s.color }))}
+                  unit="件"
+                  stacked
+                  height={210}
+                />
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] border-collapse text-[13px]">
                   <thead className="bg-surface-2">
@@ -317,7 +346,8 @@ export function PlanningView() {
                         {x.quarters.map((q, i) => (
                           <td key={i} className="px-1.5 py-2">
                             <span
-                              className={cn("block h-5 rounded-[3px]", q ? "bg-accent" : "bg-surface-3")}
+                              className={cn("block h-5 rounded-[3px]", !q && "bg-surface-3")}
+                              style={q ? { backgroundColor: colorOf(x.id) } : undefined}
                               aria-label={q ? `${QUARTER_LABELS[i]} 実施` : `${QUARTER_LABELS[i]} なし`}
                               role="img"
                             />
@@ -328,6 +358,7 @@ export function PlanningView() {
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </Panel>
 

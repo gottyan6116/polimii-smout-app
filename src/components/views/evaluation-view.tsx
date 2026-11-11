@@ -4,7 +4,10 @@ import { useMemo } from "react";
 import { evaluate } from "@/lib/analysis/evaluation";
 import { changeRate, FORMULAS, fmtNum, fmtPct, fmtSignedPct } from "@/lib/analysis/metrics";
 import { useWorkContext } from "@/lib/store/local-store";
-import { ActivityChart } from "@/components/charts/activity-chart";
+import { dataSource } from "@/lib/data/adapter";
+import { monthLabel } from "@/lib/analysis/metrics";
+import { AchievementBars, Donut, KpiMiniChart, MonthlyColumns, MultiLine, RankBars, Sparkline } from "@/components/charts/charts";
+import { SERIES } from "@/components/charts/theme";
 import { FindingGroups, SourceNote, StatusBadge } from "@/components/domain/analysis";
 import { CreateDocButton } from "@/components/domain/create-doc-button";
 import { Stat, StatStrip } from "@/components/domain/stat";
@@ -19,6 +22,25 @@ export function EvaluationView() {
   const r = useMemo(() => evaluate(ctx.municipalityId, ctx.fiscalYearId), [ctx.municipalityId, ctx.fiscalYearId]);
   const { municipality: m, fiscalYear: fy, totals, prevTotals } = r;
   const rateLabel = fy.isPartial ? "進捗率" : "達成率";
+  const years = dataSource.listFiscalYears();
+  const yearShort = (label: string) => label.replace("令和", "R").replace("年度", "").replace("（上期）", "上期");
+
+  const achievementRows = r.kpis.map((k) => ({
+    name: k.kpi.name,
+    rate: k.judgement.rate,
+    status: k.judgement.status,
+    note: `${fmtNum(k.actual, k.kpi.unit)} / 目標 ${fmtNum(k.target, k.kpi.unit)}（${k.judgement.reason}）`,
+  }));
+  const allProjects = r.projects.map((p) => p.project.id);
+  const donut = r.projects
+    .filter((p) => p.totals)
+    .map((p) => ({ name: p.project.name, value: p.totals!.interest, color: SERIES[allProjects.indexOf(p.project.id) % SERIES.length] }));
+  const monthlyInterest = r.monthly.map((p) => ({ label: monthLabel(p.month), value: p.interest, prev: p.prevInterest }));
+  const monthlyApply = r.monthly.map((p) => ({ label: monthLabel(p.month), apply: p.apply, replied: p.replied }));
+  const conversion = r.projects
+    .filter((p) => p.totals?.applyRate !== null && p.totals?.applyRate !== undefined)
+    .map((p) => ({ name: p.project.name, value: p.totals!.applyRate! }))
+    .sort((a, b) => b.value - a.value);
 
   return (
     <div className="space-y-6">
@@ -63,8 +85,26 @@ export function EvaluationView() {
         />
         {r.hasSmout && totals ? (
           <>
-            <Stat label="興味ある（件）" value={fmtNum(totals.interest)} sub={`前年度同期間比 ${fmtSignedPct(changeRate(totals.interest, prevTotals?.interest))}`} />
-            <Stat label="応募したい（件）" value={fmtNum(totals.apply)} sub={`前年度同期間比 ${fmtSignedPct(changeRate(totals.apply, prevTotals?.apply))}`} />
+            <Stat
+              label="興味ある（件）"
+              value={fmtNum(totals.interest)}
+              sub={
+                <>
+                  前年度同期間比 {fmtSignedPct(changeRate(totals.interest, prevTotals?.interest))}
+                  <Sparkline values={r.monthly.map((p) => p.interest)} className="mt-1" />
+                </>
+              }
+            />
+            <Stat
+              label="応募したい（件）"
+              value={fmtNum(totals.apply)}
+              sub={
+                <>
+                  前年度同期間比 {fmtSignedPct(changeRate(totals.apply, prevTotals?.apply))}
+                  <Sparkline values={r.monthly.map((p) => p.apply)} className="mt-1" />
+                </>
+              }
+            />
             <Stat label="応募転換率" value={fmtPct(totals.applyRate)} sub="応募したい÷興味ある" />
             <Stat label="返信率" value={fmtPct(totals.replyRate)} sub="返信あり÷（応募したい＋スカウト）" />
           </>
@@ -77,6 +117,27 @@ export function EvaluationView() {
           </>
         )}
       </StatStrip>
+
+      <div className="grid gap-5 lg:grid-cols-12">
+        <Panel
+          className="lg:col-span-7"
+          title={`自治体KPIの${rateLabel}`}
+          description={`点線が目標（100%）。${fy.isPartial ? "年度途中のため判定はせず進捗率を表示。" : "緑＝達成、赤＝未達成、灰＝判断不能。"}`}
+        >
+          <AchievementBars rows={achievementRows} />
+        </Panel>
+        {r.hasSmout && donut.length > 0 ? (
+          <Panel className="lg:col-span-5" title="「興味ある」の施策別構成" description={`${fy.periodLabel}・延べ件数`}>
+            <Donut data={donut} centerValue={fmtNum(totals?.interest)} centerLabel="興味ある（件）" unit="件" />
+          </Panel>
+        ) : (
+          <Panel className="lg:col-span-5" title="SMOUT上の施策別構成" description="SMOUT未利用">
+            <EmptyState title="施策別の反応データはありません">
+              {m.name}はSMOUTを利用していないため、施策ごとの「興味ある」等の件数はありません。架空の構成比は表示しません。
+            </EmptyState>
+          </Panel>
+        )}
+      </div>
 
       <Panel
         id="kpis"
@@ -138,13 +199,60 @@ export function EvaluationView() {
       </Panel>
 
       <Panel
+        title="自治体KPIの年度推移"
+        description="KPIごとの実績（縦棒）と目標（横線）。濃い棒が選択中の年度。単位が違うため、KPIごとに別のグラフにしています。"
+      >
+        <div className="grid gap-x-5 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+          {r.kpis.map((k) => (
+            <figure key={k.kpi.id} className="min-w-0">
+              <figcaption className="flex items-baseline justify-between gap-2">
+                <span className="truncate text-[12px] font-medium text-fg">{k.kpi.name}</span>
+                <span className="shrink-0 text-[11px] text-fg-3">{k.kpi.unit}</span>
+              </figcaption>
+              <KpiMiniChart
+                unit={k.kpi.unit}
+                currentLabel={yearShort(fy.label)}
+                data={years.map((y) => ({
+                  label: yearShort(y.label),
+                  actual: k.kpi.values[y.id]?.actual ?? null,
+                  target: k.kpi.values[y.id]?.target ?? null,
+                }))}
+              />
+            </figure>
+          ))}
+        </div>
+        <p className="mt-2 text-[12px] text-fg-3">棒がない年度は「データなし」（未集計）。0 の実績は高さ0の棒として表示されます。</p>
+      </Panel>
+
+      <Panel
         id="activity"
         title="SMOUT上の活動実績の推移"
-        description={r.hasSmout ? "掲載プロジェクト合計の月次件数（延べ）。前年度の同じ月と並べて表示します。" : undefined}
+        description={r.hasSmout ? "掲載プロジェクト合計の月次件数（延べ）。縦軸が違う2つの指標は、別々のグラフに分けています。" : undefined}
       >
         {r.hasSmout && totals ? (
           <>
-            <ActivityChart data={r.monthly} prevLabel={r.prevFiscalYear?.label ?? null} />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <figure className="min-w-0">
+                <figcaption className="mb-1 text-[13px] font-medium text-fg">「興味ある」件数（月次）</figcaption>
+                <MonthlyColumns
+                  data={monthlyInterest}
+                  barName={fy.label}
+                  lineName={r.prevFiscalYear ? `${r.prevFiscalYear.label}（同月）` : undefined}
+                />
+              </figure>
+              <figure className="min-w-0">
+                <figcaption className="mb-1 text-[13px] font-medium text-fg">「応募したい」と「返信あり」（月次）</figcaption>
+                <MultiLine
+                  data={monthlyApply}
+                  xKey="label"
+                  unit="件"
+                  series={[
+                    { key: "apply", name: "応募したい", color: SERIES[1] },
+                    { key: "replied", name: "返信あり", color: SERIES[2] },
+                  ]}
+                />
+              </figure>
+            </div>
             <details className="mt-3 text-[13px]">
               <summary className="cursor-pointer text-fg-2 hover:text-fg">月次の数値を表で見る</summary>
               <div className="mt-2 overflow-x-auto">
@@ -193,6 +301,15 @@ export function EvaluationView() {
           description="SMOUT掲載プロジェクトごとの目標・実績（件数）と転換率"
           bodyClassName="p-0"
         >
+          <div className="border-b border-border px-4 py-4">
+            <p className="mb-1 text-[13px] font-medium text-fg">施策別の応募転換率</p>
+            <p className="mb-2 text-[12px] text-fg-3">点線は掲載施策全体の応募転換率。濃い棒は全体を上回る施策。</p>
+            <RankBars
+              rows={conversion}
+              reference={totals?.applyRate !== null && totals?.applyRate !== undefined ? { value: totals.applyRate, label: `全体 ${fmtPct(totals.applyRate)}` } : undefined}
+              highlight={(_n, v) => totals?.applyRate !== null && totals?.applyRate !== undefined && v >= totals.applyRate}
+            />
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse text-[13px]">
               <caption className="sr-only">施策別の目標・実績</caption>

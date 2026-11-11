@@ -13,6 +13,7 @@ import { useDocuments, usePlan, useWorkContext } from "@/lib/store/local-store";
 import { cn, formatDateTime } from "@/lib/utils";
 import { AvailabilityBadge } from "@/components/domain/analysis";
 import { KpiSplit } from "@/components/domain/kpi-split";
+import { Sparkline } from "@/components/charts/charts";
 import { ButtonLink } from "@/components/ui/button";
 import { Badge, EmptyState, Panel } from "@/components/ui/primitives";
 
@@ -120,6 +121,15 @@ export function HomeView() {
               </ul>
             )}
             {fy.isPartial && <p className="mt-2 text-[12px] text-fg-3">年度途中のため達成判定はしていません。</p>}
+            {ev.hasSmout && ev.totals && (
+              <div className="mt-3 border-t border-border pt-3">
+                <p className="flex items-baseline justify-between text-[12px] text-fg-3">
+                  <span>SMOUT「興味ある」月次推移</span>
+                  <span className="tabular font-bold text-fg">{fmtNum(ev.totals.interest, "件")}</span>
+                </p>
+                <Sparkline values={ev.monthly.map((p) => p.interest)} className="mt-1 h-10" />
+              </div>
+            )}
           </div>
 
           <div className="mt-auto flex flex-wrap items-center gap-3 pt-5">
