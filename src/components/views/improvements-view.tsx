@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowRight, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { FINDING_LABEL, type Finding, type FindingKind } from "@/lib/analysis/findings";
@@ -198,9 +197,7 @@ function ImprovementsInner({ municipalityId, fiscalYearId }: { municipalityId: s
             {chosen.length ? `${chosen.length}件を選択中` : "採用する施策を選択してください"}
           </p>
           <Button variant="primary" onClick={reflect} disabled={chosen.length === 0}>
-            <Check aria-hidden />
             次年度計画に反映する
-            <ArrowRight aria-hidden />
           </Button>
         </div>
       </Panel>

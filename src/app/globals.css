@@ -8,9 +8,14 @@
 :root {
   color-scheme: light;
 
+  --canvas: #f4f6f5;
   --bg: #ffffff;
-  --surface-2: #f6f8f7;
+  --surface-2: #f7f9f8;
   --surface-3: #eef2f0;
+  --sidebar: #eef2f0;
+
+  --shadow-panel: 0 1px 2px rgba(22, 34, 58, 0.05);
+  --shadow-raised: 0 1px 2px rgba(22, 34, 58, 0.06), 0 6px 16px -6px rgba(22, 34, 58, 0.1);
   --border: #e0e6e3;
   --border-strong: #c7d0cc;
 
@@ -39,6 +44,10 @@
 }
 
 @theme inline {
+  --color-canvas: var(--canvas);
+  --color-sidebar: var(--sidebar);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-raised: var(--shadow-raised);
   --color-bg: var(--bg);
   --color-surface-2: var(--surface-2);
   --color-surface-3: var(--surface-3);
@@ -60,6 +69,7 @@
   --color-danger-border: var(--danger-border);
   --color-neutral-soft: var(--neutral-soft);
   --color-navy: var(--navy);
+  --color-chart-muted: var(--chart-muted);
 
   --font-sans: var(--font-noto-sans-jp), "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
   --font-serif: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
@@ -70,11 +80,18 @@
 }
 
 html {
-  background: var(--bg);
+  background: var(--canvas);
+}
+
+h1,
+h2,
+h3 {
+  font-feature-settings: "palt" 1;
+  letter-spacing: 0.01em;
 }
 
 body {
-  background: var(--bg);
+  background: var(--canvas);
   color: var(--fg);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -97,6 +114,14 @@ input,
 textarea,
 select {
   caret-color: var(--accent-strong);
+}
+
+main table tbody tr {
+  transition: background-color 120ms ease-out;
+}
+
+main table tbody tr:hover {
+  background-color: var(--surface-2);
 }
 
 .tabular {

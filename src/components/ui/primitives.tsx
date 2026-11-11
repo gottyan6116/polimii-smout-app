@@ -47,7 +47,7 @@ export function Panel({
   id?: string;
 }) {
   return (
-    <section id={id} className={cn("min-w-0 rounded-lg border border-border bg-bg", className)} aria-labelledby={id ? `${id}-title` : undefined}>
+    <section id={id} className={cn("min-w-0 overflow-hidden rounded-[10px] border border-border bg-bg shadow-panel", className)} aria-labelledby={id ? `${id}-title` : undefined}>
       {(title || actions) && (
         <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-b border-border px-4 py-3">
           <div className="min-w-0">
@@ -80,7 +80,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0 max-w-3xl">
-        <h1 className="text-[22px] font-bold leading-8 text-fg">{title}</h1>
+        <h1 className="text-[24px] font-bold leading-9 text-fg">{title}</h1>
         {description && <p className="mt-1 text-sm text-fg-3">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

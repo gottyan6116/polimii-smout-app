@@ -6,7 +6,7 @@ export function StatStrip({ children, className }: { children: ReactNode; classN
   return (
     <dl
       className={cn(
-        "grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3 xl:grid-cols-5",
+        "grid grid-cols-2 gap-px overflow-hidden rounded-[10px] border border-border bg-border shadow-panel sm:grid-cols-3 xl:grid-cols-5",
         className,
       )}
     >

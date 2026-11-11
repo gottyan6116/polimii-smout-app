@@ -222,7 +222,7 @@ function Editor({ initial }: { initial: DocumentRecord }) {
       <div className="grid items-start gap-5 xl:grid-cols-[260px_minmax(0,1fr)_300px]">
         {/* 左：引用データ */}
         <aside className={cn("space-y-4 xl:sticky xl:top-28 xl:block xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto", pane !== "data" && "hidden")} aria-label="引用データ">
-          <section className="rounded-lg border border-border">
+          <section className="rounded-[10px] border border-border bg-bg shadow-panel">
             <h2 className="border-b border-border px-3 py-2 text-[13px] font-bold">引用した数値</h2>
             {draft.figures.length === 0 ? (
               <p className="px-3 py-3 text-[12px] text-fg-3">数値の引用はありません。</p>
@@ -246,7 +246,7 @@ function Editor({ initial }: { initial: DocumentRecord }) {
             )}
           </section>
 
-          <section className="rounded-lg border border-border">
+          <section className="rounded-[10px] border border-border bg-bg shadow-panel">
             <h2 className="border-b border-border px-3 py-2 text-[13px] font-bold">分析結果を文書に反映</h2>
             <p className="px-3 pt-2 text-[12px] leading-5 text-fg-3">
               「挿入」で、選択中の節（{draft.sections.find((s) => s.id === activeId)?.heading ?? "—"}）のカーソル位置に追加します。
@@ -271,7 +271,7 @@ function Editor({ initial }: { initial: DocumentRecord }) {
             </ul>
           </section>
 
-          <section className="rounded-lg border border-border px-3 py-2.5 text-[12px] leading-5 text-fg-3">
+          <section className="rounded-[10px] border border-border bg-bg px-3 shadow-panel py-2.5 text-[12px] leading-5 text-fg-3">
             <h2 className="mb-1 text-[13px] font-bold text-fg">出典</h2>
             {sourcesUsed.map((s) => (
               <p key={s.id} className="mb-1">
@@ -284,7 +284,7 @@ function Editor({ initial }: { initial: DocumentRecord }) {
 
         {/* 中央：本文 */}
         <div className={cn("min-w-0 xl:block", pane !== "edit" && "hidden")}>
-          <div className="rounded-lg border border-border">
+          <div className="rounded-[10px] border border-border bg-bg shadow-panel">
             <div className="border-b border-border px-4 py-3">
               <label htmlFor="doc-title" className="text-[12px] font-medium text-fg-3">
                 文書タイトル
@@ -363,7 +363,7 @@ function Editor({ initial }: { initial: DocumentRecord }) {
 
         {/* 右：確認・出力・プレビュー */}
         <aside className={cn("xl:sticky xl:top-28 xl:block xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto", pane !== "check" && "hidden")} aria-label="確認と出力">
-          <section className="rounded-lg border border-border p-3">
+          <section className="rounded-[10px] border border-border bg-bg p-3 shadow-panel">
             <h2 className="text-[13px] font-bold">出力</h2>
             <div className="mt-2 grid gap-2">
               <Button variant="primary" onClick={downloadDocx} disabled={exporting}>
@@ -385,7 +385,7 @@ function Editor({ initial }: { initial: DocumentRecord }) {
             )}
           </section>
 
-          <Tabs defaultValue="check" className="mt-4 rounded-lg border border-border">
+          <Tabs defaultValue="check" className="mt-4 rounded-[10px] border border-border bg-bg shadow-panel">
             <TabsList className="px-2">
               <TabsTrigger value="check">検証状況</TabsTrigger>
               <TabsTrigger value="preview">プレビュー</TabsTrigger>

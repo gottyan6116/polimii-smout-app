@@ -350,7 +350,7 @@ export function PlanningView() {
             )}
           </Panel>
 
-          <div className="flex flex-col gap-3 rounded-lg border border-border-strong bg-surface-2 p-5">
+          <div className="flex flex-col gap-3 rounded-[10px] border border-border bg-bg p-5 shadow-raised">
             <p className="font-bold text-fg">計画案から文書を作成する</p>
             <p className="text-[13px] text-fg-2">
               選択した施策・編集内容・KPI案をそのまま反映します。施策が未選択の場合は、優先度の高い3件を「仮」として掲載し、要確認として表示します。

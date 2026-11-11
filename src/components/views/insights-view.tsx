@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AGE_BANDS, REGIONS, THEMES } from "@/lib/data/demo/dataset";
 import { dataSource } from "@/lib/data/adapter";
@@ -40,7 +39,7 @@ function InsightsInner({ m, fiscalYearId }: { m: Municipality; fiscalYearId: Ret
         actions={<CreateDocButton type="insight-report" label="分析レポートを作成する" variant="secondary" />}
       />
 
-      <section aria-label="分析条件" className="rounded-lg border border-border bg-surface-2 p-4">
+      <section aria-label="分析条件" className="rounded-[10px] border border-border bg-bg p-4 shadow-panel">
         <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
           <fieldset>
             <legend className="mb-1 text-[12px] font-medium text-fg-3">データの範囲</legend>
@@ -292,7 +291,7 @@ function InsightsInner({ m, fiscalYearId }: { m: Municipality; fiscalYearId: Ret
             <SourceNote sourceIds={r.sourceIds} className="mt-4 border-t border-border pt-3" />
           </Panel>
 
-          <div className="flex flex-col gap-4 rounded-lg border border-border-strong bg-surface-2 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-[10px] border border-border bg-bg p-5 shadow-raised sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-bold text-fg">この分析から次年度施策を検討する</p>
               <p className="mt-0.5 text-[13px] text-fg-2">重点ターゲットと関心テーマを、課題分析・施策立案に引き継ぎます。</p>
@@ -301,7 +300,6 @@ function InsightsInner({ m, fiscalYearId }: { m: Municipality; fiscalYearId: Ret
               <ButtonLink href="/improvements">課題と改善施策を確認</ButtonLink>
               <ButtonLink href="/planning" variant="primary">
                 次年度施策を検討する
-                <ArrowRight aria-hidden />
               </ButtonLink>
             </div>
           </div>

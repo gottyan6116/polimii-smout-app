@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
 import { evaluate } from "@/lib/analysis/evaluation";
 import { changeRate, FORMULAS, fmtNum, fmtPct, fmtSignedPct } from "@/lib/analysis/metrics";
@@ -39,7 +38,7 @@ export function EvaluationView() {
         <Stat
           label="自治体KPIの判定"
           value={
-            <span className="flex gap-4">
+            <span className="grid grid-cols-3 gap-2">
               {(
                 [
                   ["達成", r.summary.achieved],
@@ -47,14 +46,20 @@ export function EvaluationView() {
                   ["判断不能", r.summary.undeterminable],
                 ] as const
               ).map(([l, v]) => (
-                <span key={l} className="flex items-baseline gap-1">
+                <span key={l} className="flex flex-col leading-6">
                   {v}
-                  <span className="text-[12px] font-medium text-fg-3">{l}</span>
+                  <span className="whitespace-nowrap text-[11px] font-medium leading-4 text-fg-3">{l}</span>
                 </span>
               ))}
             </span>
           }
-          sub={`全${r.kpis.length}項目`}
+          sub={
+            <span className="mt-1 flex h-1.5 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden>
+              <span className="bg-accent" style={{ flexGrow: r.summary.achieved }} />
+              <span className="bg-danger/80" style={{ flexGrow: r.summary.notAchieved }} />
+              <span className="bg-chart-muted" style={{ flexGrow: r.summary.undeterminable }} />
+            </span>
+          }
         />
         {r.hasSmout && totals ? (
           <>
@@ -175,7 +180,6 @@ export function EvaluationView() {
             <div className="mt-3">
               <ButtonLink href="/insights" size="sm">
                 地域・関心分析を開く
-                <ArrowRight aria-hidden />
               </ButtonLink>
             </div>
           </EmptyState>
@@ -252,7 +256,7 @@ export function EvaluationView() {
         <FindingGroups findings={r.findings} />
       </Panel>
 
-      <div className="flex flex-col gap-4 rounded-lg border border-border-strong bg-surface-2 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-[10px] border border-border bg-bg p-5 shadow-raised sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="font-bold text-fg">この評価結果から成果報告書の下書きを作成します</p>
           <p className="mt-0.5 text-[13px] text-fg-2">KPIの判定・施策別の成果・分析コメントを反映します。作成後に編集し、Word・PDFで出力できます。</p>
@@ -260,7 +264,6 @@ export function EvaluationView() {
         <div className="flex flex-wrap gap-2">
           <ButtonLink href="/improvements">
             課題分析へ進む
-            <ArrowRight aria-hidden />
           </ButtonLink>
           <CreateDocButton type="performance-report" label="成果報告書を作成する" />
         </div>
