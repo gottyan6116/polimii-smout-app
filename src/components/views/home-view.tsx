@@ -13,7 +13,7 @@ import { useDocuments, usePlan, useWorkContext } from "@/lib/store/local-store";
 import { cn, formatDateTime } from "@/lib/utils";
 import { AvailabilityBadge } from "@/components/domain/analysis";
 import { KpiSplit } from "@/components/domain/kpi-split";
-import { Sparkline } from "@/components/charts/charts";
+import { RankBars, Sparkline } from "@/components/charts/charts";
 import { ButtonLink } from "@/components/ui/button";
 import { Badge, EmptyState, Panel } from "@/components/ui/primitives";
 
@@ -33,7 +33,6 @@ export function HomeView() {
   const selectedCount = plan.selected.filter((id) => r.measures.some((m) => m.id === id)).length;
   const topAge = ins.available ? [...ins.ageRows].sort((a, b) => b.count - a.count)[0] : null;
   const notAchieved = ev.kpis.filter((k) => k.judgement.status === "not-achieved");
-  const maxShare = ins.themes[0]?.share ?? 1;
 
   const catalog = [
     { label: "SMOUT 活動実績（施策別・月次）", source: src("src-smout-activity"), available: muni.usesSmout },
@@ -158,17 +157,12 @@ export function HomeView() {
                 <p className="text-[12px] font-medium text-fg-3">
                   最も多い年代は <span className="font-bold text-fg">{topAge.age}</span>（{fmtPct(topAge.share)}）・関心テーマの選択率
                 </p>
-                <ul className="mt-2 space-y-1.5 text-[13px]">
-                  {ins.themes.slice(0, 4).map((t) => (
-                    <li key={t.theme} className="grid grid-cols-[7.5rem_1fr_3.25rem] items-center gap-2">
-                      <span className="truncate text-fg">{t.theme}</span>
-                      <span className="h-1.5 rounded-full bg-surface-3" aria-hidden>
-                        <span className="block h-full rounded-full bg-accent" style={{ width: `${(t.share / maxShare) * 100}%` }} />
-                      </span>
-                      <span className="tabular text-right text-fg-2">{fmtPct(t.share)}</span>
-                    </li>
-                  ))}
-                </ul>
+                <RankBars
+                  rows={ins.themes.slice(0, 4).map((t) => ({ name: t.theme, value: t.share }))}
+                  highlight={(n) => n === ins.themes[0].theme}
+                  labelWidth={112}
+                  barSize={16}
+                />
               </>
             ) : (
               <p className="text-[13px] text-fg-3">{ins.unavailableReason}</p>

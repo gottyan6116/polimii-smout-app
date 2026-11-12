@@ -54,7 +54,7 @@ export function MonthlyColumns({
           <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} />
           <Tooltip {...TOOLTIP_PROPS} formatter={(v, n) => [nf(v, unit), String(n)]} />
           <Legend verticalAlign="top" align="right" iconType="square" iconSize={9} wrapperStyle={LEGEND_STYLE} />
-          <Bar dataKey="value" name={barName} fill="#4fb38a" radius={[4, 4, 0, 0]} maxBarSize={26} isAnimationActive={false} />
+          <Bar dataKey="value" name={barName} fill="#4fb38a" radius={[2, 2, 0, 0]} maxBarSize={26} isAnimationActive={false} />
           {lineName && (
             <Line
               dataKey="prev"
@@ -137,16 +137,19 @@ export function Donut({
   centerLabel,
   unit = "",
   size = 176,
+  stacked = false,
 }: {
   data: { name: string; value: number; color: string }[];
   centerValue: string;
   centerLabel: string;
   unit?: string;
   size?: number;
+  /** 狭い枠では凡例をドーナツの下に置く */
+  stacked?: boolean;
 }) {
   const total = data.reduce((s, d) => s + d.value, 0);
   return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+    <div className={cn("flex flex-col items-center gap-4", !stacked && "sm:flex-row sm:items-center")}>
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -218,7 +221,7 @@ export function AchievementBars({
             }}
           />
           <ReferenceLine x={100} stroke={INK.primary} strokeDasharray="3 3" label={{ value: "目標", position: "top", fontSize: 11, fill: INK.muted }} />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={18} isAnimationActive={false}>
+          <Bar dataKey="value" radius={[0, 2, 2, 0]} barSize={18} isAnimationActive={false}>
             {data.map((d) => (
               <Cell
                 key={d.name}
@@ -248,20 +251,24 @@ export function RankBars({
   reference,
   highlight,
   digits = 1,
+  labelWidth = 196,
+  barSize = 18,
 }: {
   rows: { name: string; value: number }[];
   unit?: string;
   reference?: { value: number; label: string };
   highlight?: (name: string, value: number) => boolean;
   digits?: number;
+  labelWidth?: number;
+  barSize?: number;
 }) {
   return (
-    <div style={{ height: rows.length * 36 + 36 }} className="w-full">
+    <div style={{ height: rows.length * (barSize + 18) + 36 }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} layout="vertical" margin={{ top: 14, right: 52, bottom: 4, left: 4 }} barCategoryGap="30%">
           <CartesianGrid stroke={INK.grid} horizontal={false} />
           <XAxis type="number" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: INK.axis }} tickFormatter={(v) => `${v}${unit}`} />
-          <YAxis type="category" dataKey="name" tick={{ ...AXIS_TICK, fill: INK.secondary, fontSize: 12 }} tickLine={false} axisLine={false} width={196} tickFormatter={clip} />
+          <YAxis type="category" dataKey="name" tick={{ ...AXIS_TICK, fill: INK.secondary, fontSize: 12 }} tickLine={false} axisLine={false} width={labelWidth} tickFormatter={clip} />
           <Tooltip {...TOOLTIP_PROPS} formatter={(v) => [`${Number(v).toFixed(digits)}${unit}`, ""]} />
           {reference && (
             <ReferenceLine
@@ -271,7 +278,7 @@ export function RankBars({
               label={{ value: reference.label, position: "top", fontSize: 11, fill: INK.muted }}
             />
           )}
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={18} isAnimationActive={false}>
+          <Bar dataKey="value" radius={[0, 2, 2, 0]} barSize={barSize} isAnimationActive={false}>
             {rows.map((r) => (
               <Cell key={r.name} fill={highlight?.(r.name, r.value) ? INK.emphasis : INK.base} />
             ))}
@@ -322,7 +329,7 @@ export function Columns({
               name={s.name}
               fill={s.color}
               stackId={stacked ? "s" : undefined}
-              radius={stacked ? (i === series.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]) : [4, 4, 0, 0]}
+              radius={stacked ? (i === series.length - 1 ? [2, 2, 0, 0] : [0, 0, 0, 0]) : [4, 4, 0, 0]}
               maxBarSize={single ? 44 : 22}
               stroke={stacked ? "#fff" : undefined}
               strokeWidth={stacked ? 1 : 0}
@@ -364,7 +371,7 @@ export function KpiMiniChart({
           <XAxis dataKey="label" tick={{ ...AXIS_TICK, fontSize: 10 }} tickLine={false} axisLine={{ stroke: INK.axis }} />
           <YAxis tick={{ ...AXIS_TICK, fontSize: 10 }} tickLine={false} axisLine={false} width={40} allowDecimals={false} />
           <Tooltip {...TOOLTIP_PROPS} formatter={(v, n) => [v === null || v === undefined ? "データなし" : nf(v, unit), String(n)]} />
-          <Bar dataKey="actual" name="実績" radius={[3, 3, 0, 0]} maxBarSize={22} isAnimationActive={false}>
+          <Bar dataKey="actual" name="実績" radius={[2, 2, 0, 0]} maxBarSize={22} isAnimationActive={false}>
             {data.map((d) => (
               <Cell key={d.label} fill={d.label === currentLabel ? INK.emphasis : INK.base} />
             ))}

@@ -19,12 +19,13 @@ import { dataSource } from "@/lib/data/adapter";
 import { FINDING_LABEL } from "@/lib/analysis/findings";
 import { analyzeImprovements } from "@/lib/analysis/improvements";
 import { documentToDocxBlob, safeFileName } from "@/lib/documents/docx";
-import { CHECKLIST_ITEMS, type DocumentRecord, templateOf } from "@/lib/documents/types";
+import { approvalOf, CHECKLIST_ITEMS, type DocumentRecord, templateOf } from "@/lib/documents/types";
 import { validateDocument } from "@/lib/documents/validate";
 import { engine } from "@/lib/generation/engine";
 import { useHydrated } from "@/lib/hooks";
 import { saveDocument, useDocuments } from "@/lib/store/local-store";
 import { cn, formatDateTime } from "@/lib/utils";
+import { ApprovalFlow } from "./approval-flow";
 import { DocumentPaper } from "./print-document";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Badge, EmptyState } from "@/components/ui/primitives";
@@ -363,6 +364,23 @@ function Editor({ initial }: { initial: DocumentRecord }) {
 
         {/* 右：確認・出力・プレビュー */}
         <aside className={cn("xl:sticky xl:top-28 xl:block xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto", pane !== "check" && "hidden")} aria-label="確認と出力">
+          <section className="mb-4 rounded-[10px] border border-border bg-bg p-3 shadow-panel" aria-labelledby="approval-title">
+            <h2 id="approval-title" className="mb-3 text-[13px] font-bold">
+              確認・決裁
+            </h2>
+            <ApprovalFlow
+              approval={approvalOf(draft)}
+              ready={validation.ready}
+              onChange={(approval) => {
+                const saved = { ...draft, approval, updatedAt: new Date().toISOString() };
+                saveDocument(saved);
+                setDraft(saved);
+                setDirty(false);
+                setNotice("決裁の状況を保存しました");
+              }}
+            />
+          </section>
+
           <section className="rounded-[10px] border border-border bg-bg p-3 shadow-panel">
             <h2 className="text-[13px] font-bold">出力</h2>
             <div className="mt-2 grid gap-2">

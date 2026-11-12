@@ -188,6 +188,7 @@ export const projects: Project[] = [
     themes: ["空き家・住まい"],
     intendedTarget: "30〜40代の移住検討者",
     owner: "企画課",
+    kpiIds: ["a-k3","a-k2"],
   },
   {
     id: "a-p2",
@@ -197,6 +198,7 @@ export const projects: Project[] = [
     themes: ["地域おこし協力隊", "農林漁業"],
     intendedTarget: "20〜30代",
     owner: "企画課",
+    kpiIds: ["a-k5"],
   },
   {
     id: "a-p3",
@@ -206,6 +208,7 @@ export const projects: Project[] = [
     themes: ["ワーケーション", "農林漁業"],
     intendedTarget: "都市部の30代会社員",
     owner: "産業振興課",
+    kpiIds: ["a-k4"],
   },
   {
     id: "a-p4",
@@ -215,6 +218,7 @@ export const projects: Project[] = [
     themes: ["子育て・教育"],
     intendedTarget: "未就学児のいる30代世帯",
     owner: "企画課",
+    kpiIds: ["a-k1"],
   },
   {
     id: "a-p5",
@@ -224,6 +228,7 @@ export const projects: Project[] = [
     themes: ["起業・継業"],
     intendedTarget: "起業・継業に関心のある40〜50代",
     owner: "商工観光課",
+    kpiIds: ["a-k6"],
   },
 ];
 
@@ -329,6 +334,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "件",
     countType: "件数",
     definition: "窓口・電話・オンラインで受け付けた移住相談の延べ件数（同一人物の複数回相談を含む）",
+    goalIndex: 0,
     values: {
       FY2024: { target: 120, actual: 134 },
       FY2025: { target: 150, actual: 141 },
@@ -344,6 +350,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "人",
     countType: "人数",
     definition: "町の移住支援制度（住宅改修補助・移住支援金）の交付決定者とその世帯員の転入人数",
+    goalIndex: 0,
     values: {
       FY2024: { target: 20, actual: 18 },
       FY2025: { target: 25, actual: 27 },
@@ -359,6 +366,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "組",
     countType: "件数",
     definition: "お試し住宅の利用申込のうち、実際に滞在した組数（同一世帯の再利用は別組として計上）",
+    goalIndex: 1,
     values: {
       FY2024: { target: 30, actual: 33 },
       FY2025: { target: 36, actual: 31 },
@@ -374,6 +382,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "人",
     countType: "人数",
     definition: "町応援団に登録した町外在住者の年度末時点の人数",
+    goalIndex: 2,
     values: {
       FY2024: { target: 300, actual: 312 },
       FY2025: { target: 400, actual: null },
@@ -389,6 +398,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "人",
     countType: "人数",
     definition: "年度内に着任した地域おこし協力隊員の人数",
+    goalIndex: 0,
     values: {
       FY2024: { target: 3, actual: 2 },
       FY2025: { target: 3, actual: 3 },
@@ -404,6 +414,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "件",
     countType: "件数",
     definition: "継業マッチングにより事業承継の合意に至った件数",
+    goalIndex: 0,
     values: {
       FY2025: { target: 1, actual: 0 },
       FY2026: { target: 1, actual: 0 },
@@ -419,6 +430,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "件",
     countType: "件数",
     definition: "窓口・オンライン・移住フェアで受け付けた相談の延べ件数",
+    goalIndex: 1,
     values: {
       FY2024: { target: 200, actual: 188 },
       FY2025: { target: 220, actual: 240 },
@@ -434,6 +446,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "世帯",
     countType: "世帯数",
     definition: "移住支援金・子育て世帯移住補助の交付世帯数",
+    goalIndex: 0,
     values: {
       FY2024: { target: 40, actual: 36 },
       FY2025: { target: 40, actual: 38 },
@@ -449,6 +462,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "人",
     countType: "人数",
     definition: "市主催の移住体験ツアーに参加した人数（同一人物の複数回参加は1人として計上）",
+    goalIndex: 1,
     values: {
       FY2024: { target: 40, actual: 35 },
       FY2025: { target: 40, actual: 44 },
@@ -464,6 +478,7 @@ export const municipalKpis: MunicipalKpi[] = [
     unit: "人",
     countType: "人数",
     definition: "前年度にも寄附のあった寄附者の人数（関係人口の参考指標）",
+    goalIndex: 2,
     values: {
       FY2024: { target: null, actual: 1240 },
       FY2025: { target: 1300, actual: 1412 },

@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { SourceNote, StatusBadge } from "@/components/domain/analysis";
 import { CreateDocButton } from "@/components/domain/create-doc-button";
 import { Columns } from "@/components/charts/charts";
+import { BudgetCalendar } from "@/components/domain/budget-calendar";
+import { PlanGantt } from "@/components/domain/plan-gantt";
 import { SERIES } from "@/components/charts/theme";
 import { Button } from "@/components/ui/button";
 import { Badge, Meta, PageHeader, Panel } from "@/components/ui/primitives";
@@ -191,6 +193,13 @@ export function PlanningView() {
         }
       />
 
+      <Panel
+        title="計画・予算のスケジュール"
+        description="一般的な市町村の予算編成の流れの例です（実際の日程は自治体ごとに要確認）。各時期に必要な文書の作成状況を表示します。"
+      >
+        <BudgetCalendar municipalityId={m.id} />
+      </Panel>
+
       <div className="grid gap-6 lg:grid-cols-12">
         {/* 左：分析根拠 */}
         <div className="min-w-0 space-y-4 lg:col-span-5">
@@ -302,66 +311,6 @@ export function PlanningView() {
             </ul>
           </Panel>
 
-          <Panel title="実行スケジュール" bodyClassName="p-0">
-            {planned.length === 0 ? (
-              <p className="px-4 py-4 text-[13px] text-fg-3">施策を選択すると、四半期ごとのスケジュールが表示されます。</p>
-            ) : (
-              <>
-              <div className="border-b border-border px-4 py-4">
-                <p className="mb-1 text-[13px] font-medium text-fg">四半期ごとの実施施策数</p>
-                <p className="mb-2 text-[12px] text-fg-3">同じ時期に施策が集中していないかを確認します（積み上げ＝施策ごと）。</p>
-                <Columns
-                  data={QUARTER_LABELS.map((q, qi) => {
-                    const row: Record<string, string | number> = { q };
-                    loadSeries.forEach((s) => {
-                      row[s.key] = s.ids.filter((id) => planned.find((x) => x.id === id)?.quarters[qi]).length;
-                    });
-                    return row;
-                  })}
-                  xKey="q"
-                  series={loadSeries.map((s) => ({ key: s.key, name: s.name, color: s.color }))}
-                  unit="件"
-                  stacked
-                  height={210}
-                />
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] border-collapse text-[13px]">
-                  <thead className="bg-surface-2">
-                    <tr className="border-b border-border text-[12px] text-fg-3">
-                      <th className="px-3 py-2 text-left font-medium" scope="col">施策</th>
-                      {QUARTER_LABELS.map((q) => (
-                        <th key={q} className="w-[13%] px-2 py-2 text-center font-medium" scope="col">
-                          {q}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {planned.map((x) => (
-                      <tr key={x.id}>
-                        <th scope="row" className="px-3 py-2 text-left font-normal">
-                          {x.title}
-                        </th>
-                        {x.quarters.map((q, i) => (
-                          <td key={i} className="px-1.5 py-2">
-                            <span
-                              className={cn("block h-5 rounded-[3px]", !q && "bg-surface-3")}
-                              style={q ? { backgroundColor: colorOf(x.id) } : undefined}
-                              aria-label={q ? `${QUARTER_LABELS[i]} 実施` : `${QUARTER_LABELS[i]} なし`}
-                              role="img"
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              </>
-            )}
-          </Panel>
-
           <Panel title="KPI案と注意事項" bodyClassName="p-0">
             {planned.length === 0 ? (
               <p className="px-4 py-4 text-[13px] text-fg-3">施策を選択すると、KPI案と根拠が表示されます。</p>
@@ -393,6 +342,36 @@ export function PlanningView() {
           </div>
         </div>
       </div>
+
+      <Panel title="実行スケジュール（担当課別）" description="担当課ごとのレーンに、採用した施策の実施期間を月単位で表示します。" bodyClassName="p-0">
+        {planned.length === 0 ? (
+          <p className="px-4 py-4 text-[13px] text-fg-3">施策を選択すると、四半期ごとのスケジュールが表示されます。</p>
+        ) : (
+          <>
+          <div className="border-b border-border px-4 py-4">
+            <p className="mb-1 text-[13px] font-medium text-fg">四半期ごとの実施施策数</p>
+            <p className="mb-2 text-[12px] text-fg-3">同じ時期に施策が集中していないかを確認します（積み上げ＝施策ごと）。</p>
+            <Columns
+              data={QUARTER_LABELS.map((q, qi) => {
+                const row: Record<string, string | number> = { q };
+                loadSeries.forEach((s) => {
+                  row[s.key] = s.ids.filter((id) => planned.find((x) => x.id === id)?.quarters[qi]).length;
+                });
+                return row;
+              })}
+              xKey="q"
+              series={loadSeries.map((s) => ({ key: s.key, name: s.name, color: s.color }))}
+              unit="件"
+              stacked
+              height={210}
+            />
+          </div>
+          <div className="px-0 pb-0">
+            <PlanGantt items={planned} colorOf={colorOf} yearLabel={PLAN_TARGET_LABEL} />
+          </div>
+          </>
+        )}
+      </Panel>
     </div>
   );
 }

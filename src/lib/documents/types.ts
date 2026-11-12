@@ -75,6 +75,34 @@ export interface DocumentRecord {
   checklist: Record<string, boolean>;
   /** 生成に使ったエンジン */
   engine: string;
+  /** 庁内の確認・決裁の進み具合（デモ：この端末内の記録） */
+  approval?: ApprovalState;
+}
+
+/** 0=起案（担当者が作成中） 1=係長確認中 2=課長決裁待ち 3=決裁済み */
+export type ApprovalStage = 0 | 1 | 2 | 3;
+
+export interface ApprovalEvent {
+  stage: ApprovalStage;
+  action: "submit" | "approve" | "return" | "reopen";
+  at: string;
+  note?: string;
+}
+
+export interface ApprovalState {
+  stage: ApprovalStage;
+  history: ApprovalEvent[];
+}
+
+export const APPROVAL_STEPS: { label: string; role: string }[] = [
+  { label: "起案", role: "担当者" },
+  { label: "係長確認", role: "係長" },
+  { label: "課長決裁", role: "課長" },
+  { label: "決裁済み", role: "" },
+];
+
+export function approvalOf(doc: DocumentRecord): ApprovalState {
+  return doc.approval ?? { stage: 0, history: [] };
 }
 
 export const CHECKLIST_ITEMS: { id: string; label: string }[] = [

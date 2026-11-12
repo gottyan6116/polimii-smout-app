@@ -4,22 +4,19 @@ import { FileText, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { dataSource } from "@/lib/data/adapter";
-import { TEMPLATES, templateOf } from "@/lib/documents/types";
+import { APPROVAL_STEPS, approvalOf, templateOf } from "@/lib/documents/types";
 import { validateDocument } from "@/lib/documents/validate";
 import { useHydrated } from "@/lib/hooks";
-import { deleteDocument, useDocuments, useWorkContext } from "@/lib/store/local-store";
+import { deleteDocument, useDocuments } from "@/lib/store/local-store";
 import { formatDateTime } from "@/lib/utils";
-import { CreateDocButton } from "@/components/domain/create-doc-button";
+import { CreateWizard } from "@/components/documents/create-wizard";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Badge, EmptyState, PageHeader, Panel } from "@/components/ui/primitives";
 
 export function DocumentsView() {
-  const ctx = useWorkContext();
   const docs = useDocuments();
   const hydrated = useHydrated();
   const [confirmId, setConfirmId] = useState<string | null>(null);
-  const muni = dataSource.getMunicipality(ctx.municipalityId)!;
-  const fy = dataSource.getFiscalYear(ctx.fiscalYearId);
 
   return (
     <div className="space-y-6">
@@ -29,25 +26,11 @@ export function DocumentsView() {
       />
 
       <Panel
-        title="テンプレートから作成"
-        description={`${muni.name}・${fy.label}のデータで下書きを作成します（対象は画面上部で変更）。`}
+        title="文書を作成する"
+        description="3つの手順で、分析結果を反映した下書きを作成します。生成はルールベースのデモエンジンです（生成AIは不使用）。"
         bodyClassName="p-0"
       >
-        <ul className="divide-y divide-border">
-          {TEMPLATES.map((t) => (
-            <li key={t.type} className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="font-medium text-fg">{t.label}</p>
-                <p className="text-[13px] text-fg-2">{t.description}</p>
-                <p className="text-[12px] text-fg-3">基にする分析：{t.basedOn}</p>
-              </div>
-              <CreateDocButton type={t.type} label="下書きを作成" variant="secondary" size="sm" />
-            </li>
-          ))}
-        </ul>
-        <p className="border-t border-border px-4 py-2.5 text-[12px] text-fg-3">
-          下書きはルールベースのデモエンジンで作成します（生成AIは使用していません）。数値はすべて画面の分析結果と同じ算出ロジックから引用します。
-        </p>
+        <CreateWizard />
       </Panel>
 
       <Panel title="保存済みの文書" description="この端末のブラウザ（localStorage）に保存されています。" bodyClassName="p-0">
@@ -65,6 +48,7 @@ export function DocumentsView() {
                   <th className="px-3 py-2 text-left font-medium" scope="col">文書</th>
                   <th className="px-3 py-2 text-left font-medium" scope="col">対象</th>
                   <th className="px-3 py-2 text-left font-medium" scope="col">確認状況</th>
+                  <th className="px-3 py-2 text-left font-medium" scope="col">決裁</th>
                   <th className="px-3 py-2 text-left font-medium" scope="col">更新日時</th>
                   <th className="px-3 py-2 text-right font-medium" scope="col">操作</th>
                 </tr>
@@ -91,6 +75,12 @@ export function DocumentsView() {
                         ) : (
                           <Badge tone="warn">要確認 {v.placeholders.length + v.missingFigures}・チェック {v.checklistDone}/{v.checklistTotal}</Badge>
                         )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <Badge tone={approvalOf(d).stage === 3 ? "accent" : approvalOf(d).stage === 0 ? "neutral" : "outline"}>
+                          {APPROVAL_STEPS[approvalOf(d).stage].label}
+                          {approvalOf(d).stage > 0 && approvalOf(d).stage < 3 ? "中" : ""}
+                        </Badge>
                       </td>
                       <td className="tabular px-3 py-2.5 text-fg-2">{formatDateTime(d.updatedAt)}</td>
                       <td className="px-3 py-2.5">

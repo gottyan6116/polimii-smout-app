@@ -70,6 +70,8 @@ export interface Project {
   intendedTarget: string;
   /** 施策の担当課 */
   owner: string;
+  /** この施策が主に寄与する自治体KPI（施策体系図に使う） */
+  kpiIds: string[];
 }
 
 /** SMOUT上の月次活動実績（件数。人数ではない） */
@@ -106,6 +108,8 @@ export interface MunicipalKpi {
   /** 件数か人数か（混同防止のため明示） */
   countType: "人数" | "件数" | "世帯数";
   definition: string;
+  /** 対応する政策目標（Municipality.policyGoals の添字） */
+  goalIndex: number;
   /** 年度ごとの目標と実績。null はデータなし（欠損）。0 は実績ゼロ */
   values: Partial<Record<FiscalYearId, { target: number | null; actual: number | null }>>;
   sourceId: string;

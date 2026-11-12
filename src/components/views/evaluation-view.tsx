@@ -11,6 +11,8 @@ import { SERIES } from "@/components/charts/theme";
 import { FindingGroups, SourceNote, StatusBadge } from "@/components/domain/analysis";
 import { CreateDocButton } from "@/components/domain/create-doc-button";
 import { Stat, StatStrip } from "@/components/domain/stat";
+import { JudgementFlow } from "@/components/domain/judgement-flow";
+import { PolicyTree } from "@/components/domain/policy-tree";
 import { ButtonLink } from "@/components/ui/button";
 import { Badge, EmptyState, PageHeader, Panel } from "@/components/ui/primitives";
 
@@ -76,7 +78,7 @@ export function EvaluationView() {
             </span>
           }
           sub={
-            <span className="mt-1 flex h-1.5 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden>
+            <span className="mt-1.5 flex h-2.5 w-full gap-[2px] overflow-hidden rounded-[2px]" aria-hidden>
               <span className="bg-accent" style={{ flexGrow: r.summary.achieved }} />
               <span className="bg-danger/80" style={{ flexGrow: r.summary.notAchieved }} />
               <span className="bg-chart-muted" style={{ flexGrow: r.summary.undeterminable }} />
@@ -126,18 +128,22 @@ export function EvaluationView() {
         >
           <AchievementBars rows={achievementRows} />
         </Panel>
-        {r.hasSmout && donut.length > 0 ? (
-          <Panel className="lg:col-span-5" title="「興味ある」の施策別構成" description={`${fy.periodLabel}・延べ件数`}>
-            <Donut data={donut} centerValue={fmtNum(totals?.interest)} centerLabel="興味ある（件）" unit="件" />
-          </Panel>
-        ) : (
-          <Panel className="lg:col-span-5" title="SMOUT上の施策別構成" description="SMOUT未利用">
-            <EmptyState title="施策別の反応データはありません">
-              {m.name}はSMOUTを利用していないため、施策ごとの「興味ある」等の件数はありません。架空の構成比は表示しません。
-            </EmptyState>
-          </Panel>
-        )}
+        <Panel
+          className="lg:col-span-5"
+          title="判定のしかた"
+          description={`各KPIは次の順に判定しています。右の件数は${fy.label}の内訳です。`}
+        >
+          <JudgementFlow kpis={r.kpis} isPartial={fy.isPartial} />
+        </Panel>
       </div>
+
+      <Panel
+        id="tree"
+        title="施策体系図"
+        description="政策目標 → 自治体KPI → 施策 のつながり。未達成のKPIがどの目標・施策に関わるかを確認できます。"
+      >
+        <PolicyTree municipality={m} kpis={r.kpis} projects={r.projects} />
+      </Panel>
 
       <Panel
         id="kpis"
@@ -301,7 +307,8 @@ export function EvaluationView() {
           description="SMOUT掲載プロジェクトごとの目標・実績（件数）と転換率"
           bodyClassName="p-0"
         >
-          <div className="border-b border-border px-4 py-4">
+          <div className="grid gap-6 border-b border-border px-4 py-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+            <div className="min-w-0">
             <p className="mb-1 text-[13px] font-medium text-fg">施策別の応募転換率</p>
             <p className="mb-2 text-[12px] text-fg-3">点線は掲載施策全体の応募転換率。濃い棒は全体を上回る施策。</p>
             <RankBars
@@ -309,6 +316,12 @@ export function EvaluationView() {
               reference={totals?.applyRate !== null && totals?.applyRate !== undefined ? { value: totals.applyRate, label: `全体 ${fmtPct(totals.applyRate)}` } : undefined}
               highlight={(_n, v) => totals?.applyRate !== null && totals?.applyRate !== undefined && v >= totals.applyRate}
             />
+            </div>
+            <div className="min-w-0">
+              <p className="mb-1 text-[13px] font-medium text-fg">「興味ある」の施策別構成</p>
+              <p className="mb-3 text-[12px] text-fg-3">{fy.periodLabel}・延べ件数</p>
+              <Donut data={donut} centerValue={fmtNum(totals?.interest)} centerLabel="興味ある（件）" unit="件" size={150} stacked />
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse text-[13px]">

@@ -1,3 +1,4 @@
+// avoid-ai-design-ignore-file: K3 — ガラス調はCEOの明示的な指定（ログイン画面のみ）
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LoginForm } from "./login-form";
